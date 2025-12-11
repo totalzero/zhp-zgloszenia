@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import Rejs, Zgloszenie, Finanse, Wplata, Wachta, Ogloszenie
+from .models import Rejs, Zgloszenie, Wplata, Wachta, Ogloszenie
 
 
 class OgloszenieInline(admin.StackedInline):
@@ -69,26 +69,6 @@ class WplataInline(admin.TabularInline):
 	readonly_fields = ['data']
 	ordering = ['data']
 
-class FinanseInline(admin.StackedInline):
-	model = Finanse
-	extra = 0
-	can_delete = False
-	show_change_link = True
-	readonly_fields = ['suma_wplat', 'do_zaplaty']
-	inlines = WplataInline
-	fieldsets = (
-		("rozliczenie:", {
-			"fields": (
-				"kwota_do_zaplaty",
-				"suma_wplat",
-				"do_zaplaty"
-			)
-		}),
-	)
-
-	def has_add_perrmission(self, request, obj=None):
-		return False
-
 class ZgloszenieInline(admin.TabularInline):
 	model = Zgloszenie
 	extra = 0
@@ -106,23 +86,34 @@ class ZgloszenieAdmin(admin.ModelAdmin):
 	list_display = ("id", "imie", "nazwisko", "rejs")
 	list_filter = ('rejs', )
 	search_fields = ('imie', 'nazwisko')
-	inlines = [FinanseInline]
-	def link_do_finansow(self, obj):
-		if hasattr(obj, 'finanse') and obj.finanse:
-			app_label = obj._meta.app_label
-			model_name = obj.finanse._meta.model_name
-			url = reverse(f"admin:{app_label}_{model_name}_change", args=(obj.finanse.pk,))
-			return format_html('<a href="{}">Otwórz finanse</a>', url)
-
-	link_do_finansow.short_description = 'finanse'
-
-@admin.register(Finanse)
-class FinanseAdmin(admin.ModelAdmin):
-	list_display = ["id", "zgloszenie", "kwota_do_zaplaty", "suma_wplat", "do_zaplaty"]
+	readonly_fields = ('rejs_cena', 'do_zaplaty', 'suma_wplat')
 	inlines = [WplataInline]
-
+	fieldsets = (
+		("Dane zgłoszenia: ", {
+			"fields": (
+				"imie",
+				"nazwisko",
+				"email",
+				"telefon",
+				"status",
+				"wzrok",
+				"rejs",
+				"wachta",
+			)
+		}),
+		("rozliczenie:", {
+			"fields": (
+				"rejs_cena",
+				"suma_wplat",
+				"do_zaplaty"
+			)
+		}),
+	)
+"""
 @admin.register(Wplata)
 class WplataAdmin(admin.ModelAdmin):
 	list_display = ["id", "finanse", "kwota", "data"]
 	list_filter = ['finanse']
 	ordering = ["-data"]
+
+"""

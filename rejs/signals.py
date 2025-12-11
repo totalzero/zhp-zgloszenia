@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.shortcuts import reverse
-from .models import Ogloszenie, Zgloszenie, Wplata, Finanse
+from .models import Ogloszenie, Zgloszenie, Wplata
 from .mailers import send_simple_mail
 from django.template.loader import render_to_string
 
@@ -58,22 +58,18 @@ def zgloszenie_post_save(sender, instance, created, **kwargs):
 def wplata_post_save(sender, instance, created, **kwargs):
 	if not created:
 		return
-	finanse = instance.finanse
-	zgl = finanse.zgloszenie
-	subject = f"potwierdzenie wpłaty {zgl.imie} {zgl.nazwisko}"
+	zgl = instance.zgloszenie
 	context = {
 		"zgl": zgl,
 		"wplata": instance,
-		"finanse": finanse,
 		"link": f"{'http://localhost:8000'}" + reverse("zgloszenie_details", kwargs={"token": zgl.token}),
 	}
-	send_simple_mail(subject, zgl.email, 'emails/wplata_created', context)
-
-
-@receiver(post_save, sender=Zgloszenie)
-def utworz_finanse_dla_zgloszenia(sender, instance, created, **kwargs):
-	if created and not hasattr(instance, "finanse"):
-		Finanse.objects.create(zgloszenie=instance, kwota_do_zaplaty=instance.rejs.cena)
+	if instance.rodzaj in ["wplata", "Wpłata"]:
+		subject = f"Zarejestrowaliśmy nową wpłatę {zgl.imie} {zgl.nazwisko}"
+		send_simple_mail(subject, zgl.email, 'emails/wplata', context)
+	if instance.rodzaj in ["zwrot", "zwrot"]:
+		subject = f"zwrot wpłaconych środków {zgl.imie} {zgl.nazwisko}"
+	send_simple_mail(subject, zgl.email, 'emails/wplata_zwrot', context)
 
 @receiver(post_save, sender=Ogloszenie)
 def ogloszenie_post_save(sender, instance, created, **kwargs):

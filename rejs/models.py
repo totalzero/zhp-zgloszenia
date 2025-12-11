@@ -8,10 +8,10 @@ from django.urls import reverse
 
 class Rejs(models.Model):
 	nazwa = models.CharField(max_length=200, null=False, blank=False)
-	od = models.DateField(null=False, blank=False)
-	do = models.DateField(null=False, blank=False)
-	start = models.CharField(max_length=200, null=False, blank=False)
-	koniec = models.CharField(max_length=200, null=False, blank=False)
+	od = models.DateField(null=False, blank=False, verbose_name="data od")
+	do = models.DateField(null=False, blank=False, verbose_name="data do")
+	start = models.CharField(max_length=200, null=False, blank=False, verbose_name="port początkowy")
+	koniec = models.CharField(max_length=200, null=False, blank=False, verbose_name="port końcowy")
 	cena = models.DecimalField(default=1500, max_digits=10, decimal_places=2)
 	zaliczka = models.DecimalField(default=500, max_digits=10, decimal_places=2)
 	opis = models.TextField(default="tutaj opis rejsu", blank=False, null=False)
@@ -40,18 +40,41 @@ class Zgloszenie(models.Model):
 	]
 	wzrok_statusy = [
 		("WIDZI", "widzący"),
-		("SLEPY", "niewidomy"),
-		("SLABO", "słabo widzący")
+		("NIEWIDOMY", "niewidomy"),
+		("SLABO-WIDZACY", "słabo widzący")
+	]
+	role_pola = [
+		("ZALOGANT", "załogant"),
+		("OFICER-WACHTY", "oficer wachty")
 	]
 	imie = models.CharField(max_length=100, null=False, blank=False)
 	nazwisko = models.CharField(max_length=100, null=False, blank=False)
 	email = models.EmailField(null=False, blank=False)
 	telefon = models.CharField(max_length=15, blank=False, null=False)
 	status = models.CharField(max_length=20, choices=statusy, default=statusy[1])
-	wzrok = models.CharField(max_length=6, choices=wzrok_statusy, default=wzrok_statusy[0])
+	wzrok = models.CharField(max_length=15, choices=wzrok_statusy, default=wzrok_statusy[0])
+	rola = models.CharField(max_length=25, default="ZALOGANT", choices=role_pola)
 	rejs = models.ForeignKey(Rejs, on_delete=models.CASCADE, related_name='zgloszenia')
 	wachta = models.ForeignKey(Wachta, related_name="czlonkowie", on_delete=models.SET_NULL, null=True, blank=True)
 	token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+	@property
+	def suma_wplat(self):
+#		wynik = self.wplaty.aggregate(total=Sum("kwota"))
+		#return wynik['total'] or 0
+		suma_wplat = sum(w.kwota for w in self.wplaty.filter(rodzaj="wplata"))
+		suma_zwrotow = sum(w.kwota for w in self.wplaty.filter(rodzaj="zwrot"))
+		return suma_wplat - suma_zwrotow
+
+	@property
+	def rejs_cena(self):
+		return self.rejs.cena
+
+	@property
+	def do_zaplaty(self):
+		return self.rejs.cena - self.suma_wplat
+
+
 	def __str__(self):
 		return f"{self.imie} {self.nazwisko}"
 	def clean(self):
@@ -67,29 +90,15 @@ class Zgloszenie(models.Model):
 		verbose_name = "Zgłoszenie"
 		verbose_name_plural = "Zgłoszenia"
 
-class Finanse(models.Model):
-	kwota_do_zaplaty = models.DecimalField(default=0, null=False, blank=False, verbose_name="kwota do zapłaty", max_digits=10, decimal_places=2)
-	zgloszenie = models.OneToOneField(Zgloszenie, on_delete=models.CASCADE, related_name='finanse')
-	class Meta:
-		verbose_name = "finanse"
-		verbose_name_plural = "finanse"
-
-	@property
-	def suma_wplat(self):
-		wynik = self.wplaty.aggregate(total=Sum("kwota"))
-		return wynik['total'] or 0
-	
-	@property
-	def do_zaplaty(self):
-		return self.kwota_do_zaplaty - self.suma_wplat
-	
-	def __str__(self):
-		return f"Finanse #{self.id} {self.zgloszenie}"
-
 class Wplata(models.Model):
+	rodzaje = [
+		("wplata", "Wpłata"),
+		("zwrot", "zwrot")
+	]
 	kwota = models.DecimalField(default=0, blank=False, null=False, max_digits=10, decimal_places=2)
-	finanse = models.ForeignKey(Finanse, on_delete=models.CASCADE, related_name="wplaty")
 	data = models.DateTimeField(auto_now_add=True)
+	rodzaj = models.CharField(max_length=7, default=rodzaje[1], choices=rodzaje)
+	zgloszenie = models.ForeignKey(Zgloszenie, related_name='wplaty', on_delete=models.CASCADE, blank=True, null=True)
 
 	class Meta:
 		verbose_name = "wpłata"

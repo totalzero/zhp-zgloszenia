@@ -14,6 +14,14 @@
 <p><strong>telefon: </strong> {{ zgloszenie.telefon }} </p>
 <p><strong>wzrok: </strong> {{zgloszenie.wzrok }} </p>
 <p><strong>status: </strong> {{zgloszenie.status}} </p>
+<section>
+    <h3><strong>Wpłaty</strong></h3>
+    <ul>
+        <li>cena: {{zgloszenie.rejs_cena }}</li>
+        <li>suma wpłat: {{zgloszenie.suma_wplat }}</li>
+        <li>pozostało do zapłaty: {{zgloszenie.do_zaplaty }}</li>
+    </ul>
+</section>
 <h3> {{zgloszenie.rejs.nazwa}} </h3>
 <p><strong> {{zgloszenie.rejs.od}} -> {{zgloszenie.rejs.do}} </strong></p>
 <article>

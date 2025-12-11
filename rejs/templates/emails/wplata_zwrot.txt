@@ -5,6 +5,6 @@ Jeśli zgłosiłeś się na kilka wydarzeń, to zwracamy Twoją uwagę na to, ż
 
 Podsumowanie:
 Nazwa wydarzenia: {{ zgl.rejs.nazwa }}
-Saldo: {{ finanse.suma_wplat}} zł.
+Saldo: {{ zgl.suma_wplat}} zł.
 
 {% include "emails/_footer.txt" %}
