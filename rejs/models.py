@@ -85,6 +85,15 @@ class Zgloszenie(models.Model):
 		("SLABO-WIDZACY", "słabo widzący"),
 	]
 	role_pola = [("ZALOGANT", "załogant"), ("OFICER-WACHTY", "oficer wachty")]
+	rozmiary_koszulek = [
+		("XS", "XS"),
+		("S", "s"),
+		("M", "M"),
+		("L", "L"),
+		("XL", "XL"),
+		("XXL", "XXL"),
+		("XXXL", "XXXL")
+	]
 	obecnosc_pola = [("tak", "tak"), ("nie", "nie")]
 
 	imie = models.CharField(
@@ -107,6 +116,8 @@ class Zgloszenie(models.Model):
 		verbose_name="uczestnictwo w zobaczyć morze")
 	rodo = models.BooleanField(verbose_name="zgoda na przetwarzanie danych osobowych", help_text="zgadzam się na przetwarzanie danych osobowych zgodnie z polityką prywatności zobaczyć morze.")
 	status = models.CharField(max_length=20, choices=statusy, default=STATUS_NIEZAKWALIFIKOWANY)
+	rozmiar_koszulki = models.CharField(choices=rozmiary_koszulek, max_length=5, default="M", verbose_name="rozmiar koszulki")
+	uwagi = models.TextField(max_length=800, blank=True, null=True)
 	wzrok = models.CharField(
 		max_length=15,
 		choices=wzrok_statusy,
@@ -244,6 +255,7 @@ class Dane_Dodatkowe(models.Model):
 						   null=False,
 						   default="ABC123",
 						   verbose_name="numer dokumentu")
+	
 	class Meta:
 		verbose_name = "dane dodatkowe"
 		verbose_name_plural = "dane dodatkowe"

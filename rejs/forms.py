@@ -17,7 +17,7 @@ kod_pocztowy_validator = RegexValidator(
 class ZgloszenieForm(forms.ModelForm):
 	class Meta:
 		model = Zgloszenie
-		fields = ["imie", "nazwisko", "email", "telefon", "data_urodzenia", "adres", "kod_pocztowy", "miejscowosc", "wzrok", "obecnosc", "rodo"]
+		fields = ["imie", "nazwisko", "email", "telefon", "data_urodzenia", "adres", "kod_pocztowy", "miejscowosc", "wzrok", "obecnosc", "rozmiar_koszulki", "uwagi", "rodo"]
 		labels = {
 			"imie": "Imię",
 			"nazwisko": "Nazwisko",
@@ -29,6 +29,8 @@ class ZgloszenieForm(forms.ModelForm):
 			"miejscowosc": "Miejscowość",
 			"wzrok": "Status wzroku",
 			"obecnosc": "Udział w poprzednich rejsach",
+			"rozmiar_koszulki": "Rozmiar Koszulki",
+			"uwagi": "Uwagi",
 			"rodo": "Zgoda na przetwarzanie danych osobowych",
 		}
 		help_texts = {
@@ -37,6 +39,8 @@ class ZgloszenieForm(forms.ModelForm):
 			"kod_pocztowy": "Format: XX-XXX gdzie X oznacza cyfrę",
 "wzrok": "Wybierz opcję najbliższą Twojej sytuacji",
 			"obecnosc": "Czy brałeś juz udział w rejsach zobaczyć morze?",
+			"rozmiar_koszulki": "wybierz swój właściwy wymiar",
+			"uwagi": "przekaż nam ważne informację o sobie.",
 "rodo": "czy zgadzasz się na przetwarzanie danych osobowych?",
 		}
 		widgets = {
@@ -101,6 +105,16 @@ class ZgloszenieForm(forms.ModelForm):
 			"obecnosc": forms.Select(
 				attrs={
 					"aria-required": "true",
+				}
+			),
+			"rozmiar_koszulki": forms.Select(
+				attrs={
+					"aria-required": "true",
+				}
+			),
+			"uwagi": forms.Textarea(
+				attrs= {
+					"aria-required": "false",
 				}
 			),
 			"rodo": forms.CheckboxInput(
