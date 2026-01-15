@@ -189,3 +189,13 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@zobaczycmorze.pl")
+
+
+PAYU = {
+	"ENV": os.getenv("PAYU_ENV", "sandbox"),
+	"CLIENT_ID": os.getenv("PAYU_CLIENT_ID"),
+	"CLIENT_SECRET": os.getenv("PAYU_CLIENT_SECRET"),
+	"POS_ID": os.getenv("PAYU_POS_ID"),
+	"WEBHOOK_SECRET": os.getenv("WEBHOOK_SECRET"),
+	"PAYU_API_URL": os.getenv("PAYU_API_URL"),
+}
