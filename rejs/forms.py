@@ -187,6 +187,16 @@ class ZgloszenieForm(forms.ModelForm):
 
 		return kod
 
+	def clean_rodo(self):
+		rodo = self.cleaned_data.get("rodo")
+
+		if rodo is not True:
+			raise forms.ValidationError(
+				"Aby wysłać formularz, musisz wyrazić zgodę na przetwarzanie danych osobowych."
+			)
+
+		return rodo
+
 
 class Dane_DodatkoweForm(forms.ModelForm):
 	class Meta:
