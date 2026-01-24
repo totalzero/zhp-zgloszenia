@@ -29,8 +29,11 @@ jobs:
           echo "$DEPLOYMENT_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           scp compose.yaml $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST:$ENVIRONMENT/
           ssh $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST << EOF
+          export APP_IMAGE_TAG=$APP_IMAGE_TAG
           mkdir -p $ENVIRONMENT
           echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
+          docker compose pull
+          docker compose up -d
           EOF
         shell: bash
         env:
