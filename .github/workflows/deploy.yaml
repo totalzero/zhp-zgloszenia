@@ -12,10 +12,10 @@ on:
         type: string
 jobs:
   deploy:
+    environment: ${{inputs.environment}}
     runs-on: ubuntu-latest
     steps:
       - name: Deploy
-        environment: ${{inputs.environment}}
         run: |
           eval $(ssh-agent -s)
           ssh-add - <<< "$DEPLOYMENT_SSH_PRIVATE_KEY"
