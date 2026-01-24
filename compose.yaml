@@ -43,7 +43,7 @@ services:
       - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
       - certs:/etc/nginx/certs:ro
       - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
 
   nginx-proxy-acme:
     profiles:
@@ -55,7 +55,7 @@ services:
       - certs:/etc/nginx/certs
       - html:/usr/share/nginx/html
       - acme:/etc/acme.sh
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
 
   mkcert:
     profiles:
