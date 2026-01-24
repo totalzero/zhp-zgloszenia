@@ -21,7 +21,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-add - <<< "$DEPLOYMENT_SSH_PRIVATE_KEY"
           echo "$DEPLOYMENT_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh $DEPLOYMENT_SSH_USER@DEPLOYMENT_SSH_HOST << EOF
+          ssh $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST << EOF
           mkdir -p $ENVIRONMENT
           echo $ENV_FILE > $ENVIRONMENT/.env
           EOF
