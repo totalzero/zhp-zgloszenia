@@ -30,7 +30,7 @@ jobs:
           DEPLOYMENT_SSH_PRIVATE_KEY: ${{secrets.DEPLOYMENT_SSH_PRIVATE_KEY}}
           DEPLOYMENT_SSH_KNOWN_HOSTS: ${{secrets.DEPLOYMENT_SSH_KNOWN_HOSTS}}
           DEPLOYMENT_SSH_USER: ${{secrets.DEPLOYMENT_SSH_USER}}
-          DEPLOYMENT_SSH_HOST: ${{secrets.DEPLOYMENT_SSH_USER}}
+          DEPLOYMENT_SSH_HOST: ${{secrets.DEPLOYMENT_SSH_HOST}}
           ENV_FILE: ${{secrets.ENV_FILE}}
           APP_IMAGE_TAG: ${{inputs.tag}}
           ENVIRONMENT: ${{inputs.environment}}
