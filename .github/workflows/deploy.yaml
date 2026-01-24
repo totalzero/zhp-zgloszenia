@@ -15,12 +15,19 @@ jobs:
     environment: ${{inputs.environment}}
     runs-on: ubuntu-latest
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            compose.yaml
+          sparse-checkout-cone-mode: false
       - name: Deploy
         run: |
           eval $(ssh-agent -s)
           mkdir -p ~/.ssh
           ssh-add - <<< "$DEPLOYMENT_SSH_PRIVATE_KEY"
           echo "$DEPLOYMENT_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          rsync compose.yaml $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST:$ENVIRONMENT/
           ssh $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST << EOF
           mkdir -p $ENVIRONMENT
           echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
