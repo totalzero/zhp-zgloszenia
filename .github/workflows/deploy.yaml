@@ -33,7 +33,7 @@ jobs:
           mkdir -p $ENVIRONMENT
           echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
           cd $ENVIRONMENT
-          docker compose up --pull -d
+          docker compose up -d
           EOF
         shell: bash
         env:
