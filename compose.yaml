@@ -17,8 +17,6 @@ services:
     environment:
       VIRTUAL_HOST: ${MAILCATCHER_VIRTUAL_HOST:-mailcatcher}
       VIRTUAL_PORT: 1080
-    ports:
-      - 1080:1080
 
   app:
     build: .
@@ -29,8 +27,6 @@ services:
       LETSENCRYPT_HOST: $APP_HOST
     volumes:
       - static:/app/static
-    ports:
-      - 127.0.0.1:8000:8000
 
   nginx-proxy:
     container_name: nginx-proxy
