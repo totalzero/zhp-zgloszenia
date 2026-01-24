@@ -26,6 +26,7 @@ services:
     env_file: .env
     environment:
       VIRTUAL_HOST: $APP_HOST
+      LETSENCRYPT_HOST: $APP_HOST
     volumes:
       - static:/app/static
     ports:
