@@ -24,6 +24,7 @@ jobs:
           ssh $DEPLOYMENT_SSH_USER@DEPLOYMENT_SSH_HOST << EOF
           mkdir -p $ENVIRONMENT
           echo $ENV_FILE > $ENVIRONMENT/.env
+          EOF
         shell: bash
         env:
           DEPLOYMENT_SSH_PRIVATE_KEY: ${{secrets.DEPLOYMENT_SSH_PRIVATE_KEY}}
