@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  mailcatcher:
+    profiles:
+      - dev
+    image: sj26/mailcatcher
+    restart: always
+    environment:
+      VIRTUAL_HOST: ${MAILCATCHER_VIRTUAL_HOST:-mailcatcher}
+      VIRTUAL_PORT: 1080
+
+  app:
+    build: .
+    image: ${APP_IMAGE_REGISTRY:-ghcr.io/totalzero}/${APP_IMAGE_NAME:-zhp-zgloszenia}:${APP_IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: $APP_HOST
+      LETSENCRYPT_HOST: $APP_HOST
+    volumes:
+      - static:/app/static
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: nginxproxy/nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static:/var/www/static
+      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
+      - certs:/etc/nginx/certs:ro
+      - html:/usr/share/nginx/html
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
+
+  nginx-proxy-acme:
+    profiles:
+      - prod
+    image: nginxproxy/acme-companion
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy
+
+  mkcert:
+    profiles:
+      - dev
+    build: ./mkcert
+    environment:
+      HOSTS_WITH_SELF_SIGNED_CERTS: ${APP_HOST}
+    volumes:
+      - certs:/certs
+volumes:
+  postgres:
+  static:
+  certs:
+  html:
+  acme:

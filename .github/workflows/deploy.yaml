@@ -1,0 +1,48 @@
+name: deploy
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        type: environment
+        required: true
+      tag:
+        description: 'Image tag'
+        required: true
+        type: string
+jobs:
+  deploy:
+    environment: ${{inputs.environment}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            nginx/
+            compose.yaml
+          sparse-checkout-cone-mode: false
+      - name: Deploy
+        run: |
+          eval $(ssh-agent -s)
+          mkdir -p ~/.ssh
+          ssh-add - <<< "$DEPLOYMENT_SSH_PRIVATE_KEY"
+          echo "$DEPLOYMENT_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          scp -r nginx compose.yaml $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST:$ENVIRONMENT
+          ssh $DEPLOYMENT_SSH_USER@$DEPLOYMENT_SSH_HOST << EOF
+          export APP_IMAGE_TAG=$APP_IMAGE_TAG
+          mkdir -p $ENVIRONMENT
+          echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
+          chmod 400 $ENVIRONMENT/.env
+          cd $ENVIRONMENT
+          docker compose up -d
+          EOF
+        shell: bash
+        env:
+          DEPLOYMENT_SSH_PRIVATE_KEY: ${{secrets.DEPLOYMENT_SSH_PRIVATE_KEY}}
+          DEPLOYMENT_SSH_KNOWN_HOSTS: ${{secrets.DEPLOYMENT_SSH_KNOWN_HOSTS}}
+          DEPLOYMENT_SSH_USER: ${{secrets.DEPLOYMENT_SSH_USER}}
+          DEPLOYMENT_SSH_HOST: ${{secrets.DEPLOYMENT_SSH_HOST}}
+          ENV_FILE: ${{secrets.ENV_FILE}}
+          APP_IMAGE_TAG: ${{inputs.tag}}
+          ENVIRONMENT: ${{inputs.environment}}
