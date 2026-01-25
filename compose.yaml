@@ -36,7 +36,7 @@ services:
       - "443:443"
     volumes:
       - static:/var/www/static
-#      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
+      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
       - certs:/etc/nginx/certs:ro
       - html:/usr/share/nginx/html
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
