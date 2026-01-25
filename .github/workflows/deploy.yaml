@@ -33,6 +33,7 @@ jobs:
           export APP_IMAGE_TAG=$APP_IMAGE_TAG
           mkdir -p $ENVIRONMENT
           echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
+          chmod 400 $ENVIRONMENT/.env
           cd $ENVIRONMENT
           docker compose up -d
           EOF
