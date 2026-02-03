@@ -36,19 +36,35 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  nginx-proxy:
-    container_name: nginx-proxy
-    image: nginxproxy/nginx-proxy
+  nginx:
+    image: nginx
     restart: unless-stopped
+    labels:
+      - com.github.nginx-proxy.nginx-proxy.nginx
+    container_name: nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - static:/var/www/static
+      - nginx-config:/etc/nginx/conf.d:ro
+      - static:/var/www/static:ro
+      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST:ro
+      - certs:/etc/nginx/certs:ro
+      - html:/usr/share/nginx/html:ro
+    networks:
+      - default
+      - public
+
+  dockergen:
+    image: nginxproxy/docker-gen
+    command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    networks:
+      - dockergen
+    volumes:
       - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
       - certs:/etc/nginx/certs:ro
-      - html:/usr/share/nginx/html
+      - nginx-config:/etc/nginx/conf.d
+      - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
 
   nginx-proxy-acme:
@@ -75,7 +91,17 @@ services:
       - certs:/certs
 volumes:
   postgres:
+  nginx-config:
   static:
   certs:
   html:
   acme:
+networks:
+  default:
+    name: ${INTERNAL_NETWORK_NAME:-zhp-internal}
+    internal: true
+  dockergen:
+    name: ${docker_gen_NETWORK_NAME:-zhp-docker-gen}
+    internal: true
+  public:
+    name: ${PUBLIC_NETWORK_NAME:-zhp-public}
