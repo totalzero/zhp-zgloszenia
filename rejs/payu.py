@@ -6,6 +6,7 @@ PAYU_URLS = {
 	"production": "https://secure.payu.com",
 }
 
+
 class PayUClient:
 	def __init__(self):
 		self.base_url = PAYU_URLS[settings.PAYU["ENV"]]
@@ -21,6 +22,7 @@ class PayUClient:
 				"client_id": self.client_id,
 				"client_secret": self.client_secret,
 			},
+			timeout=5,
 		)
 		r.raise_for_status()
 		return r.json()["access_token"]
@@ -36,18 +38,44 @@ class PayUClient:
 			"description": opis,
 			"currencyCode": "PLN",
 			"totalAmount": int(kwota * 100),
-			"buyer": {"email": email},
-			"products": [{
-				"name": opis,
-				"unitPrice": int(kwota * 100),
-				"quantity": 1,
-			}],
+			"buyer": {
+				"email": email,
+			},
+			"products": [
+				{
+					"name": opis,
+					"unitPrice": int(kwota * 100),
+					"quantity": 1,
+				}
+			],
 		}
 
 		r = requests.post(
 			f"{self.base_url}/api/v2_1/orders",
 			json=data,
-			headers={"Authorization": f"Bearer {token}"},
+			headers={
+				"Authorization": f"Bearer {token}",
+				"Content-Type": "application/json",
+				"Accept": "application/json",
+			},
+			allow_redirects=False,
+			timeout=5,
 		)
+
+		r.raise_for_status()
+		return r.json()
+
+	def get_order(self, order_id):
+		token = self.get_token()
+
+		r = requests.get(
+			f"{self.base_url}/api/v2_1/orders/{order_id}",
+			headers={
+				"Authorization": f"Bearer {token}",
+				"Accept": "application/json",
+			},
+			timeout=5,
+		)
+
 		r.raise_for_status()
 		return r.json()
