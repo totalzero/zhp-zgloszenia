@@ -35,6 +35,7 @@ jobs:
           echo "$ENV_FILE" | base64 -d > $ENVIRONMENT/.env
           chmod 400 $ENVIRONMENT/.env
           cd $ENVIRONMENT
+          docker compose pull
           docker compose up -d
           EOF
         shell: bash
