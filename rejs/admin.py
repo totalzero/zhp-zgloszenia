@@ -108,7 +108,17 @@ class ZgloszenieInline(admin.TabularInline):
 
 @admin.register(Rejs)
 class RejsyAdmin(admin.ModelAdmin):
-	list_display = ["nazwa", "od", "do", "start", "koniec"]
+	list_display = [
+	"nazwa",
+	"typ_rejsu",
+	"liczba_miejsc",
+	"liczba_zgloszen",
+	"czy_jest_pelny",
+	"blokada",
+	"od",
+	"do",
+]
+	list_filter = ["blokada"]
 	actions = [generate_report]
 	inlines = [ZgloszenieInline, WachtaInline, OgloszenieInline]
 

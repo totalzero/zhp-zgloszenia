@@ -7,15 +7,14 @@ from .models import Rejs, Zgloszenie
 def index(request):
 	dzis = localdate()
 	rejsy = Rejs.objects.filter(
-		aktywna_rekrutacja=True,
 		od__gte=dzis,
-		).order_by("od")
-	return render(request, "rejs/index.html", {"rejsy": rejsy})
+	).order_by("od")
 
+	return render(request, "rejs/index.html", {"rejsy": rejsy})
 
 def zgloszenie_utworz(request, rejs_id):
 	rejs = get_object_or_404(Rejs, id=rejs_id)
-	if not rejs.aktywna_rekrutacja or rejs.od < localdate():
+	if not rejs.czy_mozna_sie_zapisac:
 		return redirect("index")
 	if request.method == "POST":
 		form = ZgloszenieForm(request.POST, initial={"rejs": rejs})

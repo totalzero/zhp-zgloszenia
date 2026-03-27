@@ -36,7 +36,22 @@ class Rejs(models.Model):
 	cena = models.DecimalField(default=1500, max_digits=10, decimal_places=2)
 	zaliczka = models.DecimalField(default=500, max_digits=10, decimal_places=2)
 	opis = models.TextField(default="tutaj opis rejsu", blank=False, null=False)
-	aktywna_rekrutacja = models.BooleanField(default=True, verbose_name="aktywna rekrutacja")
+	originator = models.CharField(
+		max_length=255,
+		blank=True,
+		null=True,
+		verbose_name="Organizator "
+	)
+
+	blokada = models.BooleanField(
+		default=False,
+		verbose_name="Ręczna blokada rekrutacji"
+	)
+
+	liczba_miejsc = models.PositiveIntegerField(
+		default=20,
+		verbose_name="Liczba miejsc na rejs"
+	)
 
 	def __str__(self) -> str:
 		return self.nazwa
@@ -44,6 +59,40 @@ class Rejs(models.Model):
 	@property
 	def reszta_do_zaplaty(self):
 		return self.cena - self.zaliczka
+
+	@property
+	def liczba_zgloszen(self):
+		return self.zgloszenia.count()
+
+	@property
+	def czy_jest_pelny(self):
+		return self.liczba_zgloszen >= self.liczba_miejsc
+
+	@property
+	def czy_mozna_sie_zapisac(self):
+		from django.utils.timezone import localdate
+
+		if self.blokada:
+			return False
+
+		if self.od < localdate():
+			return False
+
+		if self.czy_jest_pelny:
+			return False
+
+		return True
+
+	@property
+	def typ_rejsu(self):
+		if not self.originator and not self.blokada:
+			return "Zwykły"
+		if self.originator and not self.blokada:
+			return "Czarter z rezerwacją"
+		if self.originator and self.blokada:
+			return "Czarter bez rezerwacji"
+		if not self.originator and self.blokada:
+			return "Postój techniczny"
 
 	def clean(self):
 		super().clean()
