@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.mypy_cache
+.ruff_cache
+.pytest_cache
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Local development
+.env
+.env.*
+!.env.example
+db.sqlite3
+
+# Documentation
+*.md
+docs/
+
+# Docker (prevent recursive copy)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Static files (collected at build time)
+static/
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db

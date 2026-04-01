@@ -1,0 +1,109 @@
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  mailcatcher:
+    profiles:
+      - dev
+    image: sj26/mailcatcher
+    restart: always
+    environment:
+      VIRTUAL_HOST: ${MAILCATCHER_VIRTUAL_HOST:-mailcatcher}
+      VIRTUAL_PORT: 1080
+
+  app:
+    build: .
+    image: ${APP_IMAGE_REGISTRY:-ghcr.io/totalzero}/${APP_IMAGE_NAME:-zhp-zgloszenia}:${APP_IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: $APP_HOST
+      LETSENCRYPT_HOST: $APP_HOST
+    volumes:
+      - static:/app/static
+    depends_on:
+      db:
+        condition: service_healthy
+  nginx:
+    image: nginx
+    restart: unless-stopped
+    labels:
+      - com.github.nginx-proxy.nginx-proxy.nginx # needed because nginx and dockergen are in separate networks
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx-config:/etc/nginx/conf.d:ro
+      - static:/var/www/static:ro
+      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST:ro
+      - certs:/etc/nginx/certs:ro
+      - html:/usr/share/nginx/html:ro
+    networks:
+      - default
+      - public
+
+  nginx-proxy-docker-gen:
+    image: nginxproxy/docker-gen
+    container_name: nginx-proxy-docker-gen
+    command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    networks:
+      - nginx-proxy-docker-gen
+    volumes:
+      - ./nginx/app:/etc/nginx/vhost.d/$APP_HOST
+      - certs:/etc/nginx/certs:ro
+      - nginx-config:/etc/nginx/conf.d
+      - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/tmp/docker.sock:ro
+
+  nginx-proxy-acme:
+    profiles:
+      - prod
+    image: nginxproxy/acme-companion
+    environment:
+      NGINX_PROXY_CONTAINER: nginx
+      NGINX_DOCKER_GEN_CONTAINER: nginx-proxy-docker-gen
+    volumes:
+      - certs:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy-docker-gen
+
+  mkcert:
+    profiles:
+      - dev
+    build: ./mkcert
+    environment:
+      HOSTS_WITH_SELF_SIGNED_CERTS: ${APP_HOST}
+    volumes:
+      - certs:/certs
+volumes:
+  postgres:
+  nginx-config:
+  static:
+  certs:
+  html:
+  acme:
+networks:
+  default:
+    name: ${INTERNAL_NETWORK_NAME:-zhp-internal}
+    internal: true
+  nginx-proxy-docker-gen:
+    name: ${docker_gen_NETWORK_NAME:-zhp-nginx-proxy-docker-gen}
+    internal: true
+  public:
+    name: ${PUBLIC_NETWORK_NAME:-zhp-public}

@@ -17,11 +17,11 @@ from pathlib import Path
 # Próba załadowania .env dla uruchomień bez UV (fallback)
 # UV używa --env-file .env natywnie
 try:
-	from dotenv import load_dotenv
+    from dotenv import load_dotenv
 
-	load_dotenv()
+    load_dotenv()
 except ImportError:
-	pass
+    pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,14 +34,14 @@ _env_file = BASE_DIR / ".env"
 _secret_key = os.environ.get("SECRET_KEY")
 DJANGO_FIELD_ENCRYPTION_KEY = os.environ.get("DJANGO_FIELD_ENCRYPTION_KEY")
 if not _env_file.exists() and not _secret_key and not DJANGO_FIELD_ENCRYPTION_KEY:
-	print("=" * 70)
-	print("⚠️  UWAGA: Brak pliku .env!")
-	print("   Skopiuj .env.example do .env i uzupełnij wartości:")
-	print("   cp .env.example .env")
-	print("")
-	print("   Szczegóły konfiguracji znajdziesz w README.md")
-	print("=" * 70)
-	sys.exit("❌ BŁĄD: SECRET_KEY nie jest ustawiony. Aplikacja nie może wystartować.")
+    print("=" * 70)
+    print("⚠️  UWAGA: Brak pliku .env!")
+    print("   Skopiuj .env.example do .env i uzupełnij wartości:")
+    print("   cp .env.example .env")
+    print("")
+    print("   Szczegóły konfiguracji znajdziesz w README.md")
+    print("=" * 70)
+    sys.exit("❌ BŁĄD: SECRET_KEY nie jest ustawiony. Aplikacja nie może wystartować.")
 
 
 # ==============================================================================
@@ -67,43 +67,43 @@ SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 # ==============================================================================
 
 INSTALLED_APPS = [
-	"rejs.apps.RejsConfig",
-	"django.contrib.admin",
-	"django.contrib.auth",
-	"django.contrib.contenttypes",
-	"django.contrib.sessions",
-	"django.contrib.messages",
-	"django.contrib.staticfiles",
-	'rest_framework',
-	'django_filters',
-	'api',
+    "rejs.apps.RejsConfig",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "django_filters",
+    "api",
 ]
 
 MIDDLEWARE = [
-	"django.middleware.security.SecurityMiddleware",
-	"django.contrib.sessions.middleware.SessionMiddleware",
-	"django.middleware.common.CommonMiddleware",
-	"django.middleware.csrf.CsrfViewMiddleware",
-	"django.contrib.auth.middleware.AuthenticationMiddleware",
-	"django.contrib.messages.middleware.MessageMiddleware",
-	"django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "zm_zgloszenia.urls"
 
 TEMPLATES = [
-	{
-		"BACKEND": "django.template.backends.django.DjangoTemplates",
-		"DIRS": [],
-		"APP_DIRS": True,
-		"OPTIONS": {
-			"context_processors": [
-				"django.template.context_processors.request",
-				"django.contrib.auth.context_processors.auth",
-				"django.contrib.messages.context_processors.messages",
-			],
-		},
-	},
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
 ]
 
 WSGI_APPLICATION = "zm_zgloszenia.wsgi.application"
@@ -114,11 +114,15 @@ WSGI_APPLICATION = "zm_zgloszenia.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 # ==============================================================================
 
+import dj_database_url
+
+# Supports DATABASE_URL for Docker/production, falls back to SQLite for local dev
 DATABASES = {
-	"default": {
-		"ENGINE": "django.db.backends.sqlite3",
-		"NAME": BASE_DIR / "db.sqlite3",
-	}
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 
@@ -128,18 +132,18 @@ DATABASES = {
 # ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-	{
-		"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-	},
-	{
-		"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-	},
-	{
-		"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-	},
-	{
-		"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-	},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 
@@ -181,7 +185,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Domyślnie używamy backendu konsolowego (emaile wyświetlane w terminalu)
 # Na produkcji ustaw EMAIL_BACKEND i inne zmienne w .env
 EMAIL_BACKEND = os.environ.get(
-	"EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
@@ -192,10 +196,19 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@zobaczycmorze
 
 
 PAYU = {
-	"ENV": os.getenv("PAYU_ENV", "sandbox"),
-	"CLIENT_ID": os.getenv("PAYU_CLIENT_ID"),
-	"CLIENT_SECRET": os.getenv("PAYU_CLIENT_SECRET"),
-	"POS_ID": os.getenv("PAYU_POS_ID"),
-	"WEBHOOK_SECRET": os.getenv("WEBHOOK_SECRET"),
-	"PAYU_API_URL": os.getenv("PAYU_API_URL"),
+    "ENV": os.getenv("PAYU_ENV", "sandbox"),
+    "CLIENT_ID": os.getenv("PAYU_CLIENT_ID"),
+    "CLIENT_SECRET": os.getenv("PAYU_CLIENT_SECRET"),
+    "POS_ID": os.getenv("PAYU_POS_ID"),
+    "WEBHOOK_SECRET": os.getenv("WEBHOOK_SECRET"),
+    "PAYU_API_URL": os.getenv("PAYU_API_URL"),
 }
+
+
+# ==============================================================================
+# Production security settings (when DEBUG=False)
+# ==============================================================================
+
+#if not DEBUG:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [SITE_URL] if SITE_URL else []
